@@ -19,6 +19,10 @@
             .url = "https://pkg.machengine.org/mach-glfw/95bacce05bce0622039be6db46145d5f378ba50f.tar.gz",
             .hash = "122009d5fa5aed0e9a75deed250450dec0705c0ead9bdb075db8ac41495992a834fc",
         },
+        .zigglgen = .{
+            .url = "https://github.com/castholm/zigglgen/releases/download/v0.2.3/zigglgen.tar.gz",
+            .hash = "1220f4188a5e1bdbb15fd50e9ea322c0721384eeba9bc077e4179b0b0eeaa7fe4ad9",
+        },
         // See `zig fetch --save <url>` for a command-line interface for adding dependencies.
         //.example = .{
         //    // When updating this field to a new URL, be sure to delete the corresponding
