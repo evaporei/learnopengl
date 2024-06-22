@@ -47,39 +47,9 @@ const fragment_shader_src: []const u8 =
     \\ }
 ;
 
-pub fn main() !void {
-    glfw.setErrorCallback(errorCallback);
-    if (!glfw.init(.{})) {
-        std.log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
-        std.process.exit(1);
-    }
-    defer glfw.terminate();
-
-    const window = glfw.Window.create(640, 480, "Helloooo", null, null, .{
-        .context_version_major = gl.info.version_major,
-        .context_version_minor = gl.info.version_minor,
-        .opengl_profile = .opengl_core_profile,
-        .opengl_forward_compat = true,
-    }) orelse {
-        std.log.err("failed to create GLFW window: {?s}", .{glfw.getErrorString()});
-        std.process.exit(1);
-    };
-    defer window.destroy();
-
-    glfw.makeContextCurrent(window);
-    defer glfw.makeContextCurrent(null);
-
-    // enables VSync, to avoid unnecessary drawing
-    glfw.swapInterval(1);
-
-    if (!gl_procs.init(glfw.getProcAddress)) {
-        std.log.err("failed to load OpenGL functions: {?s}", .{glfw.getErrorString()});
-        std.process.exit(1);
-    }
-
-    gl.makeProcTableCurrent(&gl_procs);
-    defer gl.makeProcTableCurrent(null);
-
+// compiles shaders and creates/links program
+// caller is responsible to delete the program
+fn setupProgram() c_uint {
     const vertex_shader = gl.CreateShader(gl.VERTEX_SHADER);
     if (vertex_shader == 0) {
         std.log.err("failed to create vertex shader", .{});
@@ -144,6 +114,44 @@ pub fn main() !void {
         std.log.err("failed to link program: {s}", .{std.mem.sliceTo(&info_log_buf, 0)});
         std.process.exit(1);
     }
+
+    return program;
+}
+
+pub fn main() !void {
+    glfw.setErrorCallback(errorCallback);
+    if (!glfw.init(.{})) {
+        std.log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
+        std.process.exit(1);
+    }
+    defer glfw.terminate();
+
+    const window = glfw.Window.create(640, 480, "Helloooo", null, null, .{
+        .context_version_major = gl.info.version_major,
+        .context_version_minor = gl.info.version_minor,
+        .opengl_profile = .opengl_core_profile,
+        .opengl_forward_compat = true,
+    }) orelse {
+        std.log.err("failed to create GLFW window: {?s}", .{glfw.getErrorString()});
+        std.process.exit(1);
+    };
+    defer window.destroy();
+
+    glfw.makeContextCurrent(window);
+    defer glfw.makeContextCurrent(null);
+
+    // enables VSync, to avoid unnecessary drawing
+    glfw.swapInterval(1);
+
+    if (!gl_procs.init(glfw.getProcAddress)) {
+        std.log.err("failed to load OpenGL functions: {?s}", .{glfw.getErrorString()});
+        std.process.exit(1);
+    }
+
+    gl.makeProcTableCurrent(&gl_procs);
+    defer gl.makeProcTableCurrent(null);
+
+    const program = setupProgram();
     defer gl.DeleteProgram(program);
 
     while (!window.shouldClose()) {
