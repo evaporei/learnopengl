@@ -43,7 +43,7 @@ const fragment_shader_src: []const u8 =
     \\
     \\ void main()
     \\ {
-    \\  FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    \\  FragColor = vec4(1.0f, 0.0f, 0.2f, 1.0f);
     \\ }
 ;
 
@@ -172,22 +172,22 @@ pub fn main() !void {
 
     gl.VertexAttribPointer(
         0,
-        3, // len
+        vertices.len / 3,
         gl.FLOAT,
         gl.FALSE,
-        3 * @sizeOf(f32),
+        vertices.len / 3 * @sizeOf(f32),
         undefined,
     );
     gl.EnableVertexAttribArray(0); // id above (first arg)
+
+    gl.UseProgram(program);
+    defer gl.UseProgram(0);
 
     while (!window.shouldClose()) {
         processInput(&window);
 
         gl.ClearColor(0.2, 0.3, 0.3, 1);
         gl.Clear(gl.COLOR_BUFFER_BIT);
-
-        gl.UseProgram(program);
-        defer gl.UseProgram(0);
 
         // gl.BindVertexArray(vao);
         // no need to unbind every time
