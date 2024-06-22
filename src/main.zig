@@ -154,8 +154,33 @@ pub fn main() !void {
     const program = setupProgram();
     defer gl.DeleteProgram(program);
 
+    var vao: c_uint = undefined;
+    gl.GenVertexArrays(1, (&vao)[0..1]);
+    defer gl.DeleteVertexArrays(1, (&vao)[0..1]);
+
+    var vbo: c_uint = undefined;
+    gl.GenBuffers(1, (&vbo)[0..1]);
+    defer gl.DeleteBuffers(1, (&vbo)[0..1]);
+
+    gl.BindVertexArray(vao);
+    defer gl.BindVertexArray(0);
+
+    gl.BindBuffer(gl.ARRAY_BUFFER, vbo);
+    defer gl.BindBuffer(gl.ARRAY_BUFFER, 0);
+
+    gl.BufferData(gl.ARRAY_BUFFER, vertices.len * @sizeOf(f32), &vertices, gl.STATIC_DRAW);
+
+    gl.VertexAttribPointer(
+        0,
+        3, // len
+        gl.FLOAT,
+        gl.FALSE,
+        3 * @sizeOf(f32),
+        undefined,
+    );
+    gl.EnableVertexAttribArray(0); // id above (first arg)
+
     while (!window.shouldClose()) {
-        glfw.pollEvents();
         processInput(&window);
 
         gl.ClearColor(0.2, 0.3, 0.3, 1);
@@ -164,9 +189,15 @@ pub fn main() !void {
         gl.UseProgram(program);
         defer gl.UseProgram(0);
 
+        // gl.BindVertexArray(vao);
+        // no need to unbind every time
+
+        gl.DrawArrays(gl.TRIANGLES, 0, 3);
+
         const framebuffer_size = window.getFramebufferSize();
         gl.Viewport(0, 0, @intCast(framebuffer_size.width), @intCast(framebuffer_size.height));
 
         window.swapBuffers();
+        glfw.pollEvents();
     }
 }
