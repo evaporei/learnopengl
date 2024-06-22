@@ -6,6 +6,12 @@ fn errorCallback(error_code: glfw.ErrorCode, description: [:0]const u8) void {
     std.log.err("glfw: {}: {s}\n", .{ error_code, description });
 }
 
+fn processInput(window: *const glfw.Window) void {
+    if (window.getKey(glfw.Key.escape) == glfw.Action.press) {
+        window.setShouldClose(true);
+    }
+}
+
 var gl_procs: gl.ProcTable = undefined;
 
 pub fn main() !void {
@@ -44,6 +50,8 @@ pub fn main() !void {
     while (!window.shouldClose()) {
         const framebuffer_size = window.getFramebufferSize();
         gl.Viewport(0, 0, @intCast(framebuffer_size.width), @intCast(framebuffer_size.height));
+
+        processInput(&window);
 
         window.swapBuffers();
         glfw.pollEvents();
