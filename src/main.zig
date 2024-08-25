@@ -16,14 +16,21 @@ var gl_procs: gl.ProcTable = undefined;
 
 // zig fmt: off
 const vertices = [_]f32{
-    -0.5, -0.5, -0.0,
-    0.5, -0.5, 0.0,
-    0.0, 0.5, 0.0,
+    -0.5, -0.5, 0.0, // left, bottom
+    -0.5, 0.5, 0.0, // left, top
+    0.5, 0.5, 0.0, // right, top
+    0.5, -0.5, 0.0, // right, bottom
+    // 0.5, 0.5, 0.0, // right, top
+    // 0.5, -0.5, 0.0, // right, bottom
+    // -0.5, -0.5, 0.0, // left, bottom
+    // -0.5, 0.5, 0.0, // left, top
 };
 
-const indices = []u32 {
-    0, 1, 3,
-    1, 2, 3,
+const indices = [_]u32 {
+    0, 1, 2, // first triangle
+    0, 2, 3, // second triangle
+    // 0, 1, 3, // first triangle
+    // 1, 2, 3, // second triangle
 };
 // zig fmt: on
 
@@ -162,20 +169,27 @@ pub fn main() !void {
     gl.GenBuffers(1, (&vbo)[0..1]);
     defer gl.DeleteBuffers(1, (&vbo)[0..1]);
 
+    var ebo: c_uint = undefined;
+    gl.GenBuffers(1, (&ebo)[0..1]);
+    defer gl.DeleteBuffers(1, (&ebo)[0..1]);
+
     gl.BindVertexArray(vao);
     defer gl.BindVertexArray(0);
 
     gl.BindBuffer(gl.ARRAY_BUFFER, vbo);
     defer gl.BindBuffer(gl.ARRAY_BUFFER, 0);
-
     gl.BufferData(gl.ARRAY_BUFFER, vertices.len * @sizeOf(f32), &vertices, gl.STATIC_DRAW);
+
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+    // defer gl.BindBuffer(gl.ARRAY_BUFFER, 0);
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, indices.len * @sizeOf(f32), &indices, gl.STATIC_DRAW);
 
     gl.VertexAttribPointer(
         0,
-        vertices.len / 3,
+        3,
         gl.FLOAT,
         gl.FALSE,
-        vertices.len / 3 * @sizeOf(f32),
+        3 * @sizeOf(f32),
         undefined,
     );
     gl.EnableVertexAttribArray(0); // id above (first arg)
@@ -192,7 +206,8 @@ pub fn main() !void {
         // gl.BindVertexArray(vao);
         // no need to unbind every time
 
-        gl.DrawArrays(gl.TRIANGLES, 0, 3);
+        // gl.DrawArrays(gl.TRIANGLES, 0, 3);
+        gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0); // crashes if EBO not found/bound
 
         const framebuffer_size = window.getFramebufferSize();
         gl.Viewport(0, 0, @intCast(framebuffer_size.width), @intCast(framebuffer_size.height));
