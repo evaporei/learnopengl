@@ -40,10 +40,13 @@ const vertex_shader_src: []const u8 =
 const fragment_shader_src: []const u8 =
     \\ #version 410 core
     \\ out vec4 FragColor;
+    \\ uniform vec4 ourColor;
     \\
     \\ void main()
     \\ {
-    \\  FragColor = vec4(1.0f, 0.0f, 0.2f, 1.0f);
+    \\  // // ERROR: 0:7: Left-hand-side of assignment must not be read-only
+    \\  // ourColor = vec4(1.0f);
+    \\  FragColor = ourColor;
     \\ }
 ;
 
@@ -189,8 +192,10 @@ pub fn main() !void {
         gl.ClearColor(0.2, 0.3, 0.3, 1);
         gl.Clear(gl.COLOR_BUFFER_BIT);
 
-        // gl.BindVertexArray(vao);
-        // no need to unbind every time
+        const vertex_color_location: c_int = gl.GetUniformLocation(program, "ourColor");
+        const time = glfw.getTime();
+        const green_value = std.math.sin(time) / 2.0 + 0.5;
+        gl.Uniform4f(vertex_color_location, 0.0, @floatCast(green_value), 0.0, 1.0);
 
         gl.DrawArrays(gl.TRIANGLES, 0, 3);
 
